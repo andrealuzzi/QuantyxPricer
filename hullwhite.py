@@ -391,8 +391,93 @@ def price_with_spread_bp(curve, bond_data, spread_bp):
     return get_model_price(trial_result)
 
 
+def print_bond_result(bond_data, result, curve=None):
+    print(f"{bond_data['description']} ({bond_data['instrument_id']})")
+    print(f"Valuation mode: {result['valuation_mode']}")
+    print(f"Selected call date: {result['selected_call_date']}")
+    print(f"Selected NPV: {result['selected_npv']:.4f}")
+    print(f"NPV (worst call): {result['npv_to_worst_call']:.4f}")
+    print(f"NPV (first call): {result['npv_to_first_call']:.4f}")
+    print(f"NPV (to maturity): {result['npv_to_maturity']:.4f}")
+    print(f"Redemption PV: {result['redemption_pv']:.4f}")
+    print(f"Spread: {result['spread_bp']:.1f} bp")
+
+    if 'market_price' in bond_data and curve is not None:
+        market_price = bond_data['market_price']
+        model_price = get_model_price(result)
+        diff = model_price - market_price
+        imp_spread = implied_spread_bp(curve, bond_data, market_price)
+        fitted_price = price_with_spread_bp(curve, bond_data, imp_spread)
+        print(f"Market price: {market_price:.4f}")
+        print(f"Model - Market: {diff:.4f}")
+        print(f"Implied spread from market price: {imp_spread:.2f} bp")
+        print(f"Model NPV at implied spread: {fitted_price:.4f}")
+        print(f"Residual at implied spread: {fitted_price - market_price:.6f}")
+
+    if result.get('scenarios'):
+        print('Scenarios:')
+        for scenario in result['scenarios']:
+            print(f"  {scenario['call_date']}: {scenario['npv']:.4f}")
+    print()
+
+
+def get_bond_files(base_dir: Path):
+    bond_files = []
+    for path in sorted(base_dir.glob('*.json')):
+        if path.name == CURVE_FILE.name:
+            continue
+        if path.name.startswith('.'):
+            continue
+        bond_files.append(path)
+    return bond_files
+
+
+def run_all_bonds(curve_json, bond_files=None):
+    if bond_files is None:
+        bond_files = get_bond_files(BASE_DIR)
+
+    results = []
+    for bond_file in bond_files:
+        bond_data = load_json(bond_file)
+        evaluation_date = parse_date(bond_data['evaluation_date'])
+        curve = build_discount_curve(curve_json, evaluation_date)
+        result = price_bond(curve, bond_data)
+
+        model_price = get_model_price(result)
+        market_price = bond_data.get('market_price')
+        if market_price is not None:
+            diff = model_price - market_price
+        else:
+            diff = None
+
+        results.append(
+            {
+                'bond_file': bond_file.name,
+                'instrument_id': bond_data['instrument_id'],
+                'description': bond_data.get('description', bond_data['instrument_id']),
+                'valuation_mode': result['valuation_mode'],
+                'selected_call_date': result['selected_call_date'],
+                'model_price': model_price,
+                'market_price': market_price,
+                'model_minus_market': diff,
+                'implied_spread_bp': (
+                    implied_spread_bp(curve, bond_data, market_price)
+                    if market_price is not None
+                    else None
+                ),
+            }
+        )
+
+    return results
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Price a bond from JSON terms using a simplified QuantLib setup.')
+    parser.add_argument(
+        '--all-bonds',
+        action='store_true',
+        help='Price all known bond JSON files in the project folder',
+    )
     parser.add_argument(
         '--bond-file',
         default=str(BOND_FILE),
@@ -409,36 +494,19 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     curve_json = load_json(Path(args.curve_file))
+
+    if args.all_bonds:
+        batch_results = run_all_bonds(curve_json)
+        for item in batch_results:
+            bond_data = load_json(BASE_DIR / item['bond_file'])
+            evaluation_date = parse_date(bond_data['evaluation_date'])
+            curve = build_discount_curve(curve_json, evaluation_date)
+            result = price_bond(curve, bond_data)
+            print_bond_result(bond_data, result, curve)
+        raise SystemExit(0)
+
     bond_data = load_json(Path(args.bond_file))
     evaluation_date = parse_date(bond_data['evaluation_date'])
     curve = build_discount_curve(curve_json, evaluation_date)
     result = price_bond(curve, bond_data)
-
-    print(f"{bond_data['description']} ({bond_data['instrument_id']})")
-    model_price = get_model_price(result)
-    mode = result['valuation_mode']
-    if mode == 'worst_call':
-        print(f"NPV (worst call): {result['selected_npv']:.4f}")
-    elif mode == 'first_call':
-        print(f"NPV (first call): {result['selected_npv']:.4f}")
-    elif mode == 'to_maturity':
-        print(f"NPV (to maturity): {result['selected_npv']:.4f}")
-    else:
-        print(f"NPV: {result['selected_npv']:.4f}")
-    print(f"Selected call date: {result['selected_call_date']}")
-    print(f"NPV (worst call): {result['npv_to_worst_call']:.4f}")
-    print(f"NPV (first call): {result['npv_to_first_call']:.4f}")
-    print(f"NPV (to maturity): {result['npv_to_maturity']:.4f}")
-    print(f"Redemption PV: {result['redemption_pv']:.4f}")
-    print(f"Spread: {result['spread_bp']:.1f} bp")
-
-    if 'market_price' in bond_data:
-        market_price = bond_data['market_price']
-        diff = model_price - market_price
-        print(f"Market price: {market_price:.4f}")
-        print(f"Model - Market: {diff:.4f}")
-        imp_spread = implied_spread_bp(curve, bond_data, market_price)
-        fitted_price = price_with_spread_bp(curve, bond_data, imp_spread)
-        print(f"Implied spread from market price: {imp_spread:.2f} bp")
-        print(f"Model NPV at implied spread: {fitted_price:.4f}")
-        print(f"Residual at implied spread: {fitted_price - market_price:.6f}")
+    print_bond_result(bond_data, result, curve)
