@@ -4,9 +4,9 @@ from pathlib import Path
 import QuantLib as ql
 
 try:
-    from models import Spire
+    from models import spire
 except ModuleNotFoundError:
-    import Spire
+    import spire
 
 try:
     from models import pdf_report
@@ -15,8 +15,8 @@ except ModuleNotFoundError:
 
 
 BASE_DIR = Path(__file__).resolve().parent
-ASSETS_DIR = Spire.ASSETS_DIR
-CURVES_DIR = Spire.CURVES_DIR
+ASSETS_DIR = spire.ASSETS_DIR
+CURVES_DIR = spire.CURVES_DIR
 CURVE_FILE = CURVES_DIR / 'swap_curves.json'
 BOND_FILE = ASSETS_DIR / 'XS0316010023.json'
 
@@ -76,7 +76,7 @@ def get_index_assumption(note_data):
 
 def price_note(note_data, curve, curve_day_count):
     eval_date = ql.Settings.instance().evaluationDate
-    note_day_count = Spire.get_day_count(note_data.get('accrual_day_count', 'Actual365Fixed'))
+    note_day_count = spire.get_day_count(note_data.get('accrual_day_count', 'Actual365Fixed'))
     coupon_structure = note_data.get('coupon_structure', 'index_linked')
     if coupon_structure != 'index_linked':
         raise ValueError(
@@ -87,7 +87,7 @@ def price_note(note_data, curve, curve_day_count):
     notional = float(note_data.get('note_notional', 100000000.0))
     issuer_spread_bp = float(note_data.get('credit_spread_bp', 0.0))
     index_assumption = get_index_assumption(note_data)
-    dates = Spire.build_note_dates(note_data)
+    dates = spire.build_note_dates(note_data)
 
     pv_coupons = 0.0
     pv_redemption = 0.0
@@ -100,18 +100,18 @@ def price_note(note_data, curve, curve_day_count):
             continue
 
         accrual = note_day_count.yearFraction(d0, d1)
-        index_ratio = Spire.inflation_factor(eval_date, d1, index_assumption)
+        index_ratio = spire.inflation_factor(eval_date, d1, index_assumption)
         coupon_cf = notional * index_assumption['coupon_multiplier'] * accrual * index_ratio
-        df = Spire.discount_factor_with_issuer_spread(curve, curve_day_count, eval_date, d1, issuer_spread_bp)
+        df = spire.discount_factor_with_issuer_spread(curve, curve_day_count, eval_date, d1, issuer_spread_bp)
         pv = coupon_cf * df
         pv_coupons += pv
         cashflows.append({'date': d1.ISO(), 'type': 'coupon', 'amount': coupon_cf, 'df': df, 'pv': pv})
 
     maturity_date = dates[-1]
     if maturity_date > eval_date:
-        index_ratio_mat = Spire.inflation_factor(eval_date, maturity_date, index_assumption)
+        index_ratio_mat = spire.inflation_factor(eval_date, maturity_date, index_assumption)
         redemption_cf = notional * index_ratio_mat
-        df_maturity = Spire.discount_factor_with_issuer_spread(
+        df_maturity = spire.discount_factor_with_issuer_spread(
             curve,
             curve_day_count,
             eval_date,
@@ -139,17 +139,17 @@ def price_note(note_data, curve, curve_day_count):
 
 
 def price_index_linked_note(note_data, curve_json):
-    evaluation_date = Spire.parse_date(note_data['evaluation_date'])
-    note_curve_cfg, note_curve_name = Spire.select_note_curve(note_data, curve_json)
-    collateral_curve_cfg, collateral_curve_name = Spire.select_collateral_curve(note_data, curve_json)
-    note_curve, note_curve_day_count = Spire.build_discount_curve(note_curve_cfg, evaluation_date)
-    collateral_curve, collateral_curve_day_count = Spire.build_discount_curve(collateral_curve_cfg, evaluation_date)
+    evaluation_date = spire.parse_date(note_data['evaluation_date'])
+    note_curve_cfg, note_curve_name = spire.select_note_curve(note_data, curve_json)
+    collateral_curve_cfg, collateral_curve_name = spire.select_collateral_curve(note_data, curve_json)
+    note_curve, note_curve_day_count = spire.build_discount_curve(note_curve_cfg, evaluation_date)
+    collateral_curve, collateral_curve_day_count = spire.build_discount_curve(collateral_curve_cfg, evaluation_date)
     note_notional = float(note_data.get('note_notional', 100000000.0))
     issue_price = float(note_data.get('issue_price', 100.0))
 
     note_leg = price_note(note_data, note_curve, note_curve_day_count)
-    collateral_leg = Spire.model_collateral_pv(note_data['collateral'], collateral_curve, collateral_curve_day_count)
-    adjustments = Spire.compute_valuation_adjustments(note_data, note_curve, note_curve_day_count)
+    collateral_leg = spire.model_collateral_pv(note_data['collateral'], collateral_curve, collateral_curve_day_count)
+    adjustments = spire.compute_valuation_adjustments(note_data, note_curve, note_curve_day_count)
     contract_completeness = assess_contract_completeness(note_data)
 
     swap_cfg = note_data.get('swap', {})
@@ -238,8 +238,8 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    note_data = Spire.load_json(Path(args.bond_file))
-    curve_json = Spire.load_json(Path(args.curve_file))
+    note_data = spire.load_json(Path(args.bond_file))
+    curve_json = spire.load_json(Path(args.curve_file))
     result = price_index_linked_note(note_data, curve_json)
     print_report(note_data, result)
     pdf_path = pdf_report.create_pdf_report(

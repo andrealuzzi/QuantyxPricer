@@ -40,7 +40,7 @@
     "principal_amount": 90000000.0,
     "issue_date": "03-05-2023",
     "maturity_date": "03-05-2032",
-    "coupon_rate": 0.0,
+    "coupon_rate": 0.0437,
     "coupon_frequency": "Annual",
     "day_count": "Actual365Fixed",
     "calendar": "TARGET",

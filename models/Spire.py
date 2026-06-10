@@ -419,11 +419,47 @@ def model_collateral_pv(collateral_data, curve, curve_day_count):
     eval_date = ql.Settings.instance().evaluationDate
     issue_date = parse_date(collateral_data['issue_date'])
     maturity_date = parse_date(collateral_data['maturity_date'])
-    coupon_rate = float(collateral_data['coupon_rate'])
     principal = float(collateral_data['principal_amount'])
     collateral_spread_bp = float(
         collateral_data.get('collateral_spread_bp', collateral_data.get('collateral_spread', 0.0))
     )
+
+    # Handle multi-tranche facilities (new structure) vs. simple collateral (legacy)
+    # Priority: explicit coupon_rate field > tranches array > fallback to 0.0
+    explicit_coupon_rate = collateral_data.get('coupon_rate')
+    tranches = collateral_data.get('tranches', None)
+    
+    if explicit_coupon_rate is not None:
+        # Use explicit coupon_rate if provided (takes precedence)
+        coupon_rate = float(explicit_coupon_rate)
+    elif tranches:
+        # Multi-tranche facility: calculate weighted average coupon
+        coupon_rate = 0.0
+        total_principal = 0.0
+        for tranche in tranches:
+            tranche_principal = float(tranche.get('principal', 0.0))
+            tranche_coupon_type = tranche.get('coupon_type', 'fixed')
+            
+            if tranche_coupon_type == 'inflation_linked':
+                coupon = float(tranche.get('coupon_rate', 0.0))
+            elif tranche_coupon_type == 'fixed':
+                coupon = float(tranche.get('coupon_rate', 0.0))
+            elif tranche_coupon_type == 'floating':
+                # For floating: use spread + assumed base rate
+                spread_bp = float(tranche.get('coupon_spread_bp', 0.0)) / 10000.0
+                assumed_base = 0.03  # 3% assumed base rate for LIBOR/EURIBOR
+                coupon = assumed_base + spread_bp
+            else:
+                coupon = 0.0
+            
+            coupon_rate += tranche_principal * coupon
+            total_principal += tranche_principal
+        
+        if total_principal > 0:
+            coupon_rate /= total_principal
+    else:
+        # Fallback: no tranches, no explicit coupon_rate
+        coupon_rate = 0.0
 
     schedule = build_regular_schedule(
         issue_date,

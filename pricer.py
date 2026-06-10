@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from models import Spire, hullwhite, index_linked, montecarlo, pdf_report, trinomialtree
+from models import hullwhite, index_linked, montecarlo, pdf_report, spire, trinomialtree
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -136,8 +136,8 @@ def dispatch_one(bond_file: Path, curve_json, args):
         return
 
     if model_name == 'spire':
-        result = Spire.price_spire_note(bond_data, curve_json)
-        Spire.print_report(bond_data, result)
+        result = spire.price_spire_note(bond_data, curve_json)
+        spire.print_report(bond_data, result)
         pdf_path = pdf_report.create_pdf_report(
             model_name='spire',
             instrument_id=bond_data.get('instrument_id', 'unknown'),

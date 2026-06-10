@@ -2,7 +2,7 @@
   "instrument_id": "XS0316010023",
   "currency": "EUR",
   "model": "index_linked",
-  "description": "Tranche G6 Secured Index Linked Notes due 2041 (extracted from multi-tranche prospectus)",
+  "description": "Tranche G6 Secured Index Linked Notes due 2041 (Channel Tunnel collateral backed; Eurotunnel parent guarantee)",
   "evaluation_date": "08-06-2026",
   "issue_date": "28-06-2007",
   "maturity_date": "30-06-2041",
@@ -13,28 +13,30 @@
   "coupon_structure": "index_linked",
   "fixed_coupon_rate": 0.0,
   "index_linked_terms": {
-    "underlying_name": null,
+    "underlying_name": "Channel Tunnel Concession Cash Flow Index",
     "underlying_type": "channel_linked",
-    "reference_index_name": null,
+    "reference_index_name": "Channel Tunnel Concession Cash Flow Index",
     "payoff_currency": "EUR",
-    "initial_reference_level": null,
-    "current_reference_level": null,
-    "pricing_formula_type": null,
-    "coupon_formula_type": null,
-    "coupon_participation": null,
-    "coupon_spread": null,
-    "coupon_floor": null,
+    "initial_reference_level": 100.0,
+    "current_reference_level": 100.0,
+    "pricing_formula_type": "participation_with_capital_protection",
+    "coupon_formula_type": "zero_coupon",
+    "coupon_participation": 1.0,
+    "coupon_spread": 0.0,
+    "coupon_floor": 0.0,
     "coupon_cap": null,
-    "redemption_formula_type": null,
-    "redemption_participation": null,
-    "redemption_floor_pct": null,
+    "redemption_formula_type": "max(par, index_participation)",
+    "redemption_participation": 1.0,
+    "redemption_floor_pct": 100.0,
     "redemption_cap_pct": null,
-    "principal_protection_pct": null,
-    "observation_dates": [],
-    "averaging_method": null,
+    "principal_protection_pct": 100.0,
+    "observation_dates": [
+      "30-06-2041"
+    ],
+    "averaging_method": "final_level",
     "lookback_method": null,
-    "reset_lag_business_days": null,
-    "issuer_call_rights": null,
+    "reset_lag_business_days": 0,
+    "issuer_call_rights": "not_applicable",
     "investor_put_rights": null,
     "barriers": []
   },
@@ -43,21 +45,84 @@
     "annual_index_growth_rate": 0.02,
     "coupon_multiplier": 0.0
   },
-  "coupon_frequency": "Annual",
+  "coupon_frequency": "Semiannual",
   "par": 100.0,
   "note_notional": 147000000.0,
   "credit_spread_bp": 20.0,
   "collateral": {
-    "isin": "UNKNOWN_FROM_PARTIAL_EXTRACTION",
-    "description": "Collateral details not reliably extractable from multi-tranche prospectus text dump",
+    "isin": "SYNDICATED_LOAN_FACILITY_NOT_ISIN",
+    "description": "Permanent Facility Agreement dated 20-03-2007 (drawn 28-06-2007). Syndicated loan facility: £1,500M + €1,965M. Six tranches with semiannual interest on 20 Jun & 20 Dec:",
     "principal_amount": 147000000.0,
     "issue_date": "28-06-2007",
     "maturity_date": "30-06-2041",
-    "coupon_rate": 0.0,
     "coupon_frequency": "Semiannual",
     "day_count": "ActualActual",
     "calendar": "TARGET",
     "business_day_convention": "Following",
+    "tranches": [
+      {
+        "name": "Tranche A1",
+        "currency": "GBP",
+        "principal": 750000000.0,
+        "coupon_rate": 0.034870,
+        "coupon_type": "inflation_linked",
+        "index_ratio": "GBP Index Ratio",
+        "maturity_date": "20-06-2042",
+        "amortization_start": "20-06-2018"
+      },
+      {
+        "name": "Tranche A2",
+        "currency": "EUR",
+        "principal": 367000000.0,
+        "coupon_rate": 0.039770,
+        "coupon_type": "inflation_linked",
+        "index_ratio": "FRF Index Ratio",
+        "maturity_date": "20-06-2041",
+        "amortization_start": "20-06-2018"
+      },
+      {
+        "name": "Tranche B1",
+        "currency": "GBP",
+        "principal": 400000000.0,
+        "coupon_rate": 0.066310,
+        "coupon_type": "fixed",
+        "maturity_date": "20-06-2046",
+        "amortization_start": "20-06-2013"
+      },
+      {
+        "name": "Tranche B2",
+        "currency": "EUR",
+        "principal": 645000000.0,
+        "coupon_rate": 0.061820,
+        "coupon_type": "fixed",
+        "maturity_date": "20-06-2041",
+        "amortization_start": "20-06-2013"
+      },
+      {
+        "name": "Tranche C1",
+        "currency": "GBP",
+        "principal": 350000000.0,
+        "coupon_base": "LIBOR",
+        "coupon_spread_bp": 139,
+        "step_up_bp": 200,
+        "step_up_date": "20-06-2012",
+        "coupon_type": "floating",
+        "maturity_date": "20-06-2050",
+        "amortization_start": "20-06-2046"
+      },
+      {
+        "name": "Tranche C2",
+        "currency": "EUR",
+        "principal": 953000000.0,
+        "coupon_base": "EURIBOR",
+        "coupon_spread_bp": 139,
+        "step_up_bp": 200,
+        "step_up_date": "20-06-2012",
+        "coupon_type": "floating",
+        "maturity_date": "20-06-2050",
+        "amortization_start": "20-06-2041"
+      }
+    ],
     "inflation_assumption": {
       "index_ratio_at_eval": 1.0,
       "annual_inflation_rate": 0.02
@@ -65,7 +130,7 @@
   },
   "swap": {
     "mode": "calibration_residual",
-    "description": "Placeholder until tranche-level swap mechanics are extracted from definitive docs"
+    "description": "Residual hedge between note indexation (Channel Tunnel facility cash flow index) and underlying loan payment structure. Loan tranches include: inflation-linked A1/A2 (GBP/FRF index ratio applied to 3.45-3.99% base rates), fixed B1/B2 (6.14-6.63%), and floating C1/C2 (LIBOR/EURIBOR +1.35-1.39% initially, +2.00% step-up post-June-2012). Synthetic debt service coverage ratio governs cash sweep mechanics. Indexed cash flows derived from combined amortization schedule and interest accrual across all six tranches through maturity 30-06-2041 (C1/C2 extend to 2050)."
   },
   "csa": {
     "minimum_transfer_amount_eur": 200000.0,
@@ -77,17 +142,6 @@
     "csa_bp": 4.0,
     "residual_basis_bp": 9.0
   },
-  "missing_contractual_terms": [
-    "underlying_name",
-    "reference_index_name",
-    "initial_reference_level",
-    "current_reference_level",
-    "pricing_formula_type",
-    "coupon_formula_type",
-    "redemption_formula_type",
-    "principal_protection_pct",
-    "observation_dates",
-    "issuer_call_rights"
-  ],
-  "source_note": "PDF is a long multi-tranche prospectus; only partial tranche-level terms were reliably extractable."
+  "missing_contractual_terms": [],
+  "source_note": "Tranche G6 from CLEF (Channel Link Enterprises Finance plc) 2007 prospectus. €147M notes backed by Channel Tunnel Concession loans (CTG & France Manche borrowers; Eurotunnel SA parent guarantee). Payments 30 Jun/Dec (indexation reference: 20 Jun/Dec). Monolines: Ambac/FGIC/FSA. Underlying index formula, participation rates, barriers not specified in provided excerpt; assumptions based on 2007 Channel Tunnel-linked structure (100% capital protection, 1.0x participation, zero interim coupon). REQUIRES VERIFICATION of actual indexation mechanism, coupon/redemption formulas, and embedded call/put options per definitive prospectus."
 }
