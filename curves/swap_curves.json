@@ -1,0 +1,122 @@
+[
+  {
+    "curve_name": "EUR_OIS_PROXY",
+    "as_of": "2026-06-08",
+    "day_count": "Actual365Fixed",
+    "calendar": "TARGET",
+    "compounding": "Annual",
+    "pillars": [
+      { "tenor": "ON",  "rate": 0.01930, "source": "ECB €STR fixing 2026-06-08" },
+      { "tenor": "1M",  "rate": 0.01935, "source": "proxy off €STR near-flat front end" },
+      { "tenor": "3M",  "rate": 0.01955, "source": "public proxy" },
+      { "tenor": "6M",  "rate": 0.01990, "source": "public proxy" },
+      { "tenor": "1Y",  "rate": 0.02020, "source": "public proxy" },
+      { "tenor": "2Y",  "rate": 0.02120, "source": "public proxy" },
+      { "tenor": "3Y",  "rate": 0.02180, "source": "public proxy" },
+      { "tenor": "5Y",  "rate": 0.02240, "source": "public proxy" },
+      { "tenor": "7Y",  "rate": 0.02270, "source": "public proxy" },
+      { "tenor": "10Y", "rate": 0.02300, "source": "public proxy" },
+      { "tenor": "15Y", "rate": 0.02325, "source": "public proxy" },
+      { "tenor": "20Y", "rate": 0.02340, "source": "public proxy" },
+      { "tenor": "30Y", "rate": 0.02350, "source": "public proxy" }
+    ]
+  },
+  {
+    "curve_name": "USD_OIS_PROXY",
+    "as_of": "2026-06-08",
+    "day_count": "Actual365Fixed",
+    "calendar": "UnitedStates",
+    "compounding": "Annual",
+    "pillars": [
+      { "tenor": "ON",  "rate": 0.03630, "source": "SOFR fixing 2026-06-05 / 2026-06-08 reference tables" },
+      { "tenor": "1M",  "rate": 0.03625, "source": "public proxy near Term SOFR 1M" },
+      { "tenor": "3M",  "rate": 0.03660, "source": "public proxy near Term SOFR 3M" },
+      { "tenor": "6M",  "rate": 0.03735, "source": "public proxy near Term SOFR 6M" },
+      { "tenor": "1Y",  "rate": 0.03880, "source": "public proxy near Term SOFR 12M" },
+      { "tenor": "2Y",  "rate": 0.03840, "source": "public proxy" },
+      { "tenor": "3Y",  "rate": 0.03790, "source": "public proxy" },
+      { "tenor": "5Y",  "rate": 0.03710, "source": "public proxy" },
+      { "tenor": "7Y",  "rate": 0.03670, "source": "public proxy" },
+      { "tenor": "10Y", "rate": 0.03640, "source": "public proxy" },
+      { "tenor": "15Y", "rate": 0.03620, "source": "public proxy" },
+      { "tenor": "20Y", "rate": 0.03610, "source": "public proxy" },
+      { "tenor": "30Y", "rate": 0.03600, "source": "public proxy" }
+    ]
+  },
+  {
+    "curve_name": "EUR_FWD_PROXY_6M",
+    "as_of": "2026-06-08",
+    "day_count": "Actual360",
+    "calendar": "TARGET",
+    "compounding": "Simple",
+    "index": "EURIBOR6M proxy",
+    "pillars": [
+      { "tenor": "6M",  "rate": 0.02586, "source": "public 6M Euribor table 2026-06-08" },
+      { "tenor": "1Y",  "rate": 0.02570, "source": "public proxy" },
+      { "tenor": "2Y",  "rate": 0.02520, "source": "public proxy" },
+      { "tenor": "3Y",  "rate": 0.02480, "source": "public proxy" },
+      { "tenor": "5Y",  "rate": 0.02440, "source": "public proxy" },
+      { "tenor": "7Y",  "rate": 0.02430, "source": "public proxy" },
+      { "tenor": "10Y", "rate": 0.02420, "source": "public proxy" }
+    ]
+  },
+  {
+    "curve_name": "USD_FWD_PROXY_3M",
+    "as_of": "2026-06-08",
+    "day_count": "Actual360",
+    "calendar": "UnitedStates",
+    "compounding": "Simple",
+    "index": "Term SOFR 3M proxy",
+    "pillars": [
+      { "tenor": "3M",  "rate": 0.03661, "source": "public Term SOFR 3M table" },
+      { "tenor": "6M",  "rate": 0.03740, "source": "public Term SOFR 6M table / proxy" },
+      { "tenor": "1Y",  "rate": 0.03919, "source": "public Term SOFR 12M table" },
+      { "tenor": "2Y",  "rate": 0.03860, "source": "public proxy" },
+      { "tenor": "3Y",  "rate": 0.03810, "source": "public proxy" },
+      { "tenor": "5Y",  "rate": 0.03720, "source": "public proxy" },
+      { "tenor": "7Y",  "rate": 0.03680, "source": "public proxy" },
+      { "tenor": "10Y", "rate": 0.03650, "source": "public proxy" }
+    ]
+  },
+  {
+    "curve_name": "EURUSD_FX_SPOT_AND_FORWARD_PROXY",
+    "as_of": "2026-06-09",
+    "base_currency": "EUR",
+    "quote_currency": "USD",
+    "spot": {
+      "rate": 1.1573,
+      "source": "ECB euro reference rate"
+    },
+    "forwards": [
+      { "tenor": "1M",  "rate": 1.1590, "source": "implied from EUR/USD spot and OIS differential, proxy" },
+      { "tenor": "3M",  "rate": 1.1628, "source": "implied from EUR/USD spot and OIS differential, proxy" },
+      { "tenor": "6M",  "rate": 1.1682, "source": "implied from EUR/USD spot and OIS differential, proxy" },
+      { "tenor": "1Y",  "rate": 1.1790, "source": "implied from EUR/USD spot and OIS differential, proxy" },
+      { "tenor": "2Y",  "rate": 1.1975, "source": "implied from EUR/USD spot and OIS differential, proxy" },
+      { "tenor": "3Y",  "rate": 1.2150, "source": "implied from EUR/USD spot and OIS differential, proxy" },
+      { "tenor": "5Y",  "rate": 1.2485, "source": "implied from EUR/USD spot and OIS differential, proxy" },
+      { "tenor": "7Y",  "rate": 1.2810, "source": "implied from EUR/USD spot and OIS differential, proxy" },
+      { "tenor": "10Y", "rate": 1.3310, "source": "implied from EUR/USD spot and OIS differential, proxy" }
+    ]
+  },
+  {
+    "curve_name": "EURUSD_XCCY_BASIS_PROXY",
+    "as_of": "2026-06-09",
+    "day_count": "Actual360",
+    "calendar": "TARGET+UnitedStates",
+    "compounding": "Quarterly",
+    "quote_convention": "bps on EUR leg",
+    "pillars": [
+      { "tenor": "3M",  "rate": -0.0008, "source": "short-dated public proxy near CME XEURBI / market near-zero basis regime" },
+      { "tenor": "6M",  "rate": -0.0010, "source": "public proxy" },
+      { "tenor": "1Y",  "rate": -0.0012, "source": "public proxy" },
+      { "tenor": "2Y",  "rate": -0.0015, "source": "public proxy" },
+      { "tenor": "3Y",  "rate": -0.0018, "source": "public proxy" },
+      { "tenor": "5Y",  "rate": -0.0022, "source": "public proxy" },
+      { "tenor": "7Y",  "rate": -0.0025, "source": "public proxy" },
+      { "tenor": "10Y","rate": -0.0028, "source": "public proxy" },
+      { "tenor": "15Y","rate": -0.0030, "source": "public proxy" },
+      { "tenor": "20Y","rate": -0.0032, "source": "public proxy" }
+    ]
+  }
+]

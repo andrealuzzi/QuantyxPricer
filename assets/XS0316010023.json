@@ -1,0 +1,48 @@
+{
+  "instrument_id": "XS0316010023",
+  "description": "Tranche G6 Secured Index Linked Notes due 2041 (extracted from multi-tranche prospectus)",
+  "evaluation_date": "08-06-2026",
+  "issue_date": "28-06-2007",
+  "maturity_date": "30-06-2041",
+  "calendar": "TARGET",
+  "accrual_day_count": "Actual365Fixed",
+  "business_day_convention": "Following",
+  "date_generation": "Forward",
+  "coupon_structure": "index_linked",
+  "fixed_coupon_rate": 0.0,
+  "coupon_frequency": "Annual",
+  "par": 100.0,
+  "note_notional": 147000000.0,
+  "credit_spread_bp": 20.0,
+  "collateral": {
+    "isin": "UNKNOWN_FROM_PARTIAL_EXTRACTION",
+    "description": "Collateral details not reliably extractable from multi-tranche prospectus text dump",
+    "principal_amount": 147000000.0,
+    "issue_date": "28-06-2007",
+    "maturity_date": "30-06-2041",
+    "coupon_rate": 0.0,
+    "coupon_frequency": "Semiannual",
+    "day_count": "ActualActual",
+    "calendar": "TARGET",
+    "business_day_convention": "Following",
+    "inflation_assumption": {
+      "index_ratio_at_eval": 1.0,
+      "annual_inflation_rate": 0.02
+    }
+  },
+  "swap": {
+    "mode": "calibration_residual",
+    "description": "Placeholder until tranche-level swap mechanics are extracted from definitive docs"
+  },
+  "csa": {
+    "minimum_transfer_amount_eur": 200000.0,
+    "valuation_frequency": "Daily"
+  },
+  "valuation_adjustments": {
+    "fees_bp": 6.0,
+    "funding_bp": 10.0,
+    "csa_bp": 4.0,
+    "residual_basis_bp": 9.0
+  },
+  "source_note": "PDF is a long multi-tranche prospectus; only partial tranche-level terms were reliably extractable."
+}

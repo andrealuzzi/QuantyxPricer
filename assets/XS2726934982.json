@@ -1,0 +1,67 @@
+{
+  "instrument_id": "XS2726934982",
+  "description": "SPIRE EUR 90mm Fixed Rate Secured Notes due 03 May 2032 (NATIXIS termsheet)",
+  "evaluation_date": "08-06-2026",
+  "trade_date": "22-11-2023",
+  "issue_date": "06-12-2023",
+  "interest_commencement_date": "03-05-2023",
+  "maturity_date": "03-05-2032",
+  "calendar": "TARGET",
+  "accrual_day_count": "Actual365Fixed",
+  "business_day_convention": "ModifiedFollowing",
+  "date_generation": "Forward",
+  "coupon_structure": "fixed",
+  "fixed_coupon_rate": 0.04181,
+  "fixed_coupon_schedule": [
+    {
+      "start_date": "03-05-2023",
+      "end_date": "03-05-2024",
+      "rate": 0.04279
+    },
+    {
+      "start_date": "03-05-2024",
+      "end_date": "03-05-2032",
+      "rate": 0.04181
+    }
+  ],
+  "coupon_frequency": "Annual",
+  "first_coupon_date": "03-05-2024",
+  "par": 100.0,
+  "note_notional": 90000000.0,
+  "issue_price": 108.189,
+  "credit_spread_bp": 20.0,
+  "issuer_call": "Not Applicable",
+  "valuation_mode": "to_maturity",
+  "collateral": {
+    "isin": "FR0011233394",
+    "description": "CDC Habitat collateral from NATIXIS termsheet",
+    "principal_amount": 90000000.0,
+    "issue_date": "03-05-2023",
+    "maturity_date": "03-05-2032",
+    "coupon_rate": 0.0,
+    "coupon_frequency": "Annual",
+    "day_count": "Actual365Fixed",
+    "calendar": "TARGET",
+    "business_day_convention": "ModifiedFollowing",
+    "inflation_assumption": {
+      "index_ratio_at_eval": 1.0,
+      "annual_inflation_rate": 0.0
+    },
+    "market_dirty_price": 108.189,
+    "source": "NATIXIS termsheet excerpt (first 3 pages); collateral coupon details not fully visible"
+  },
+  "swap": {
+    "mode": "calibration_residual",
+    "description": "Balancing transformation into stepped fixed coupon note profile"
+  },
+  "csa": {
+    "minimum_transfer_amount_eur": 200000.0,
+    "valuation_frequency": "Daily"
+  },
+  "valuation_adjustments": {
+    "fees_bp": 5.0,
+    "funding_bp": 8.0,
+    "csa_bp": 3.0,
+    "residual_basis_bp": 6.0
+  }
+}

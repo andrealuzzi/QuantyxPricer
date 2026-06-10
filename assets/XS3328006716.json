@@ -1,0 +1,62 @@
+{
+  "instrument_id": "XS3328006716",
+  "description": "SPIRE Callable Fixed Rate Notes linked to Amazon.com Inc. due 2046 (Goldman termsheet)",
+  "evaluation_date": "10-06-2026",
+  "trade_date": "19-03-2026",
+  "issue_date": "09-04-2026",
+  "maturity_date": "15-03-2046",
+  "first_coupon_date": "15-03-2027",
+  "calendar": "TARGET",
+  "accrual_day_count": "30/360",
+  "business_day_convention": "Following",
+  "date_generation": "Forward",
+  "coupon_structure": "fixed",
+  "fixed_coupon_rate": 0.04745,
+  "coupon_frequency": "Annual",
+  "par": 100.0,
+  "note_notional": 45000000.0,
+  "issue_price": 100.0,
+  "credit_spread_bp": 20.0,
+  "issuer_call": "Applicable",
+  "callable_type": "european",
+  "call_dates": [
+    "15-03-2029"
+  ],
+  "issuer_call_redemption_amount_pct": 100.0,
+  "valuation_mode": "to_maturity",
+  "collateral": {
+    "isin": "US023135DG82",
+    "description": "Amazon.com Inc. bond collateral from Goldman termsheet",
+    "principal_amount": 51800000.0,
+    "issue_date": "13-03-2016",
+    "maturity_date": "13-03-2046",
+    "coupon_rate": 0.0565,
+    "coupon_frequency": "Semiannual",
+    "day_count": "30/360",
+    "calendar": "TARGET",
+    "business_day_convention": "Following",
+    "inflation_assumption": {
+      "index_ratio_at_eval": 1.0,
+      "annual_inflation_rate": 0.0
+    },
+    "market_dirty_price": 99.66105556,
+    "source": "Purchase price USD 51,624,426.78 on USD 51,800,000 principal"
+  },
+  "swap": {
+    "mode": "calibration_residual",
+    "description": "Transformation swap from USD Amazon collateral economics into EUR fixed 4.745% note cash flows"
+  },
+  "csa": {
+    "base_currency": "USD",
+    "minimum_transfer_amount_usd": 100000.0,
+    "valuation_frequency": "Weekly",
+    "issuer_collateral_valuation_pct": 95.0,
+    "swap_counterparty_collateral_valuation_pct": 95.0
+  },
+  "valuation_adjustments": {
+    "fees_bp": 5.0,
+    "funding_bp": 9.0,
+    "csa_bp": 4.0,
+    "residual_basis_bp": 8.0
+  }
+}
