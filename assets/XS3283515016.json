@@ -1,0 +1,90 @@
+{
+  "instrument_id": "XS3283515016",
+  "currency": "EUR",
+  "model": "spire",
+  "description": "SPIRE Series 2026-159 EUR 125mm Repackaged Notes due 15 August 2053 (Citi termsheet)",
+  "evaluation_date": "08-06-2026",
+  "trade_date": "21-01-2026",
+  "issue_date": "23-02-2026",
+  "maturity_date": "15-08-2053",
+  "calendar": "TARGET",
+  "accrual_day_count": "Actual365Fixed",
+  "business_day_convention": "Following",
+  "date_generation": "Forward",
+  "coupon_structure": "zero_coupon",
+  "fixed_coupon_rate": 0.0,
+  "coupon_frequency": null,
+  "par": 100.0,
+  "note_notional": 125000000.0,
+  "issue_price": 100.0,
+  "credit_spread_bp": 20.0,
+  "issuer_call": "Applicable",
+  "callable_type": "autocall_forward_dirty",
+  "call_dates": [
+    "15-08-2036"
+  ],
+  "issuer_call_settlement": "cash_to_swap_counterparty",
+  "autocall_trigger": {
+    "type": "forward_dirty_bid_value",
+    "underlying_isin": "DE0001030757",
+    "reference_source": "Citi termsheet / prospectus annex",
+    "exercise_rule": "call_if_forward_dirty_meets_trigger_level",
+    "notes": "Trigger formula not encoded; flag for modelling as probabilistic event driven by forward dirty bid",
+     "monte_carlo_vol": 0.02,
+     "monte_carlo_paths": 1000
+  },
+  "issuer_call_redemption_amount_pct": 158.91579239,
+  "final_redemption_amount_pct": 317.87821812,
+  "valuation_mode": "call_and_maturity",
+  "collateral": {
+    "isin": "DE0001030757",
+    "description": "German sovereign collateral from Citi termsheet",
+    "principal_amount": 175340000.0,
+    "issue_date": "15-08-2023",
+    "maturity_date": "15-08-2053",
+    "coupon_rate": 0.018,
+    "coupon_frequency": "Annual",
+    "day_count": "ActualActual",
+    "calendar": "TARGET",
+    "business_day_convention": "Following",
+    "inflation_assumption": {
+      "index_ratio_at_eval": 1.0,
+      "annual_inflation_rate": 0.0
+    },
+    "market_dirty_price": 71.35684932,
+    "source": "Citi termsheet"
+  },
+  "collateral_repo": {
+    "is_repo_financed": true,
+    "repo_purchase_price_pct": 71.35684932,
+    "repo_price_differential_pct": 0.0301,
+    "reverse_repo_price_differential_pct": 0.0337,
+    "repo_counterparty": "Citigroup Global Markets Limited",
+    "gmra_termination_date": "15-08-2036"
+  },
+  "swap": {
+    "mode": "explicit_cashflows",
+    "description": "Swap + repo/reverse repo transforming Bund and repo economics into zero-coupon / autocall payoff",
+    "repo_price_differential_pct": 0.0301,
+    "reverse_repo_price_differential_pct": 0.0337,
+    "repo_purchase_price": 125000000.0,
+    "gmra_termination_date": "15-08-2036"
+  },
+  "csa": {
+    "minimum_transfer_amount_eur": 250000.0,
+    "valuation_frequency": "Daily"
+  },
+  "valuation_adjustments": {
+    "fees_bp": 6.0,
+    "funding_bp": 10.0,
+    "csa_bp": 4.0,
+    "residual_basis_bp": 8.0
+  }
+  ,
+  "missing_contractual_terms": [
+    "Exact Autocall Termination Trigger formula (forward dirty bid level)",
+    "Detailed swap cash-flow schedule",
+    "Exact treatment of repo rebalancing and collateralisation level",
+    "Any amendments from the March 2026 announcement, if applicable"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "instrument_id": "FR0013398757",
+  "currency": "EUR",
+  "model": "hullwhite",
+  "description": "BNP Paribas callable fixed-rate subordinated bond",
+  "evaluation_date": "08-06-2026",
+  "issue_date": "28-01-2019",
+  "maturity_date": "28-01-2039",
+  "calendar": "TARGET",
+  "accrual_day_count": "Actual360",
+  "business_day_convention": "ModifiedFollowing",
+  "date_generation": "Forward",
+  "coupon_structure": "fixed",
+  "fixed_coupon_rate": 0.0334,
+  "coupon_frequency": "Annual",
+  "par": 100.0,
+  "credit_spread_bp": 15.0,
+  "callable_type": "european",
+  "call_dates": ["28-01-2034"],
+  "valuation_mode": "first_call",
+  "redemption": 100.0,
+  "call_price": 100.0
+}

@@ -1,0 +1,23 @@
+{
+  "instrument_id": "US023135DG82",
+  "currency": "USD",
+  "model": "hullwhite",
+  "description": "Amazon Sr Unsec callable fixed bond simplified to next call",
+  "evaluation_date": "08-06-2026",
+  "issue_date": "13-03-2026",
+  "maturity_date": "13-03-2046",
+  "calendar": "TARGET",
+  "accrual_day_count": "30/360",
+  "business_day_convention": "ModifiedFollowing",
+  "date_generation": "Forward",
+  "coupon_structure": "fixed",
+  "fixed_coupon_rate": 0.0565,
+  "coupon_frequency": "Semiannual",
+  "par": 100.0,
+  "credit_spread_bp": 110.0,
+  "callable_type": "european",
+  "valuation_mode": "first_call",
+  "call_dates": ["13-09-2045"],
+  "redemption": 100.0,
+  "call_price": 100.0
+}

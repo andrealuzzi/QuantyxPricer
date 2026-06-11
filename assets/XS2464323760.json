@@ -1,0 +1,55 @@
+{
+  "instrument_id": "XS2464323760",
+  "currency": "EUR",
+  "model": "spire",
+  "description": "SPIRE EUR 100mm Fixed Rate Notes due 18 February 2044 (Morgan Stanley termsheet)",
+  "evaluation_date": "08-06-2026",
+  "trade_date": "24-03-2022",
+  "issue_date": "07-04-2022",
+  "maturity_date": "18-02-2044",
+  "calendar": "TARGET",
+  "accrual_day_count": "30/360",
+  "business_day_convention": "Following",
+  "date_generation": "Forward",
+  "coupon_structure": "fixed",
+  "fixed_coupon_rate": 0.01616,
+  "coupon_frequency": "Annual",
+  "first_coupon_date": "18-02-2023",
+  "par": 100.0,
+  "note_notional": 100000000.0,
+  "issue_price": 100.0,
+  "credit_spread_bp": 20.0,
+  "issuer_call": "Not Applicable",
+  "valuation_mode": "to_maturity",
+  "collateral": {
+    "isin": "US912810RF75",
+    "description": "US Treasury collateral from termsheet",
+    "principal_amount": 110000000.0,
+    "issue_date": "15-02-2014",
+    "maturity_date": "15-02-2044",
+    "coupon_rate": 0.01375,
+    "coupon_frequency": "Semiannual",
+    "day_count": "ActualActual",
+    "calendar": "TARGET",
+    "business_day_convention": "Following",
+    "inflation_assumption": {
+      "index_ratio_at_eval": 1.0,
+      "annual_inflation_rate": 0.0
+    },
+    "source": "Morgan Stanley termsheet; currency conversion and exact collateral conventions may require final docs"
+  },
+  "swap": {
+    "mode": "calibration_residual",
+    "description": "Transformation leg from collateral economics to fixed 1.616% note profile"
+  },
+  "csa": {
+    "minimum_transfer_amount_eur": 100000.0,
+    "valuation_frequency": "Daily"
+  },
+  "valuation_adjustments": {
+    "fees_bp": 4.0,
+    "funding_bp": 7.0,
+    "csa_bp": 2.0,
+    "residual_basis_bp": 5.0
+  }
+}
