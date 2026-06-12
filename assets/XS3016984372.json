@@ -1,6 +1,6 @@
 {
   "instrument_id": "XS3016984372",
-  "model": "hullwhite",
+  "model": "bond",
   "description": "CaixaBank SA Sub Bermudan Callable CMS Resettable (simplified assumptions)",
   "evaluation_date": "08-06-2026",
   "issue_date": "05-03-2025",

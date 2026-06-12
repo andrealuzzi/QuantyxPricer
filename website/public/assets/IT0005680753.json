@@ -2,7 +2,7 @@
   "isin": "IT0005680753",
   "issuer": "REPUBLIC OF ITALY",
   "guarantor": null,
-  "model": "bond",
+  "model": "hullwhite",
   "seniority": "N",
   "typology": "Italian Government Bonds",
   "bond_structure": "Plain Vanilla",

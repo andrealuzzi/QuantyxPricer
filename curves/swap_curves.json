@@ -183,5 +183,29 @@
       { "tenor": "2Y", "spread_bp": 120, "source": "input proxy" },
       { "tenor": "5Y", "spread_bp": 150, "source": "input proxy" }
     ]
-  }
+  },
+  {
+  "curve_name": "TUR_CDS_PROXY",
+  "as_of": "2026-06-09",
+  "quote_type": "cds_spreads",
+  "reference_entity": "Republic of Turkey",
+  "reference_obligations": ["US900123CM05"],
+  "pillars": [
+    { "tenor": "1Y", "spread_bp": 210, "source": "input proxy consistent with public 2026 Turkey CDS levels" },
+    { "tenor": "2Y", "spread_bp": 235, "source": "input proxy consistent with public 2026 Turkey CDS levels" },
+    { "tenor": "5Y", "spread_bp": 255, "source": "input proxy consistent with public 2026 Turkey CDS levels" }
+  ]
+},
+{
+  "curve_name": "BRA_CDS_PROXY",
+  "as_of": "2026-06-09",
+  "quote_type": "cds_spreads",
+  "reference_entity": "Republic of Brazil",
+  "reference_obligations": ["US105754BJ42"],
+  "pillars": [
+    {"tenor": "1Y", "spread_bp": 105, "source": "input proxy consistent with public 2026 Brazil CDS levels"},
+    {"tenor": "2Y", "spread_bp": 115, "source": "input proxy consistent with public 2026 Brazil CDS levels"},
+    {"tenor": "5Y", "spread_bp": 125, "source": "input proxy consistent with World Government Bonds 123.74 bps on 9 Jun 2026"}
+  ]
+}
 ]

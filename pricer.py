@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from models import hullwhite, index_linked, montecarlo, spire, trinomialtree
+from models import hullwhite, index_linked, montecarlo, spire, trinomialtree,cln
 try:
     from reporting import pdf_report, json_report
 except ModuleNotFoundError:
@@ -82,7 +82,11 @@ def validate_asset_filenames_by_isin():
     for bond_file in sorted(ASSETS_DIR.glob('*.json')):
         if bond_file.name.startswith('.'):
             continue
-        bond_data = hullwhite.load_json(bond_file)
+        try:
+            bond_data = hullwhite.load_json(bond_file)
+        except Exception as exc:
+            print(f"Skipping {bond_file.name}: could not load JSON ({exc})")
+            continue
         expected_name = expected_isin_filename(bond_data)
         if expected_name and bond_file.name != expected_name:
             mismatches.append((bond_file.name, expected_name))
@@ -119,7 +123,12 @@ def dispatch_one(bond_file: Path, curve_json, args):
     if not model_name:
         raise ValueError(f'Missing model field in {bond_file.name}. Add model in bond JSON.')
 
-    if model_name == 'hullwhite':
+    # allow alias 'bond' for the hullwhite pricer
+    effective_model = model_name
+    if model_name == 'bond':
+        effective_model = 'hullwhite'
+
+    if effective_model == 'hullwhite':
         evaluation_date = hullwhite.parse_date(bond_data['evaluation_date'])
         discount_curve_cfg = hullwhite.select_discount_curve_config(curve_json, bond_data)
         curve = hullwhite.build_discount_curve(discount_curve_cfg, evaluation_date)
@@ -142,6 +151,31 @@ def dispatch_one(bond_file: Path, curve_json, args):
             'bond_file': bond_file.name,
             'instrument_id': bond_data.get('instrument_id'),
             'model': model_name,
+            'currency': bond_data.get('currency'),
+            'pdf': str(pdf_path),
+            'result': result,
+        }
+
+    if model_name == 'cln':
+        # Reduced-form credit-linked note pricer
+        evaluation_date = hullwhite.parse_date(bond_data['evaluation_date'])
+        discount_curve_cfg = hullwhite.select_discount_curve_config(curve_json, bond_data)
+        curve = hullwhite.build_discount_curve(discount_curve_cfg, evaluation_date)
+        result = cln.price_cln(curve, bond_data, curve_json=curve_json)
+        cln.print_cln_result(bond_data, result)
+        pdf_path = pdf_report.create_pdf_report(
+            model_name='cln',
+            instrument_id=bond_data.get('instrument_id', 'unknown'),
+            input_payload=bond_data,
+            output_payload=result,
+        )
+        print(f'PDF report: {pdf_path}')
+        print()
+        return {
+            'bond_file': bond_file.name,
+            'instrument_id': bond_data.get('instrument_id'),
+            'model': model_name,
+            'currency': bond_data.get('currency'),
             'pdf': str(pdf_path),
             'result': result,
         }
@@ -161,6 +195,7 @@ def dispatch_one(bond_file: Path, curve_json, args):
             'bond_file': bond_file.name,
             'instrument_id': bond_data.get('instrument_id'),
             'model': model_name,
+            'currency': bond_data.get('currency'),
             'pdf': str(pdf_path),
             'result': result,
         }
@@ -180,6 +215,7 @@ def dispatch_one(bond_file: Path, curve_json, args):
             'bond_file': bond_file.name,
             'instrument_id': bond_data.get('instrument_id'),
             'model': model_name,
+            'currency': bond_data.get('currency'),
             'pdf': str(pdf_path),
             'result': result,
         }
@@ -202,6 +238,7 @@ def dispatch_one(bond_file: Path, curve_json, args):
             'bond_file': bond_file.name,
             'instrument_id': data.get('instrument_id'),
             'model': model_name,
+            'currency': data.get('currency'),
             'pdf': str(pdf_path),
             'result': result,
         }
@@ -222,6 +259,7 @@ def dispatch_one(bond_file: Path, curve_json, args):
             'bond_file': bond_file.name,
             'instrument_id': data.get('instrument_id'),
             'model': model_name,
+            'currency': data.get('currency'),
             'pdf': str(pdf_path),
             'result': result,
         }

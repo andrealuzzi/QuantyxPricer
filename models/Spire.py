@@ -6,6 +6,7 @@ from pathlib import Path
 
 import QuantLib as ql
 import random
+from . import hullwhite
 
 try:
     from reporting import pdf_report
@@ -775,7 +776,7 @@ def price_spire_note(note_data, curve_json):
     lhs_pct = lhs * scale_to_pct
     rhs_pct = rhs * scale_to_pct
 
-    return {
+    result = {
         'evaluation_date': evaluation_date.ISO(),
         'note_discount_curve_name': note_curve_name,
         'collateral_discount_curve_name': collateral_curve_name,
@@ -816,6 +817,41 @@ def price_spire_note(note_data, curve_json):
         'collateral_leg': collateral_leg,
         'swap_mode': swap_mode,
     }
+    # Compute YTM (promised and expected). SPIRE uses deterministic issuer spread
+    try:
+        day_count = note_curve_day_count
+        freq = hullwhite.get_compounding_frequency_per_year(note_data)
+        eval_d = evaluation_date
+        amounts = []
+        times = []
+        for cf in note_leg.get('cashflows', []):
+            pd = ql.DateParser.parseISO(cf['date'])
+            t = day_count.yearFraction(eval_d, pd)
+            if t <= 0.0:
+                continue
+            amounts.append(float(cf.get('amount', 0.0)))
+            times.append(float(t))
+        # add redemption if present in note_leg but not in cashflows
+        t_red = day_count.yearFraction(eval_d, parse_date(note_data['maturity_date']))
+        if t_red > 0.0 and (not any(abs(x - t_red) < 1e-9 for x in times)):
+            redemption = float(note_data.get('redemption', note_data.get('par', 100.0)))
+            amounts.append(float(redemption))
+            times.append(float(t_red))
+
+        ytm_promised = hullwhite.solve_ytm_from_cashflows(float(note_leg.get('pv_note', 0.0)), amounts, times, freq)
+        # SPIRE does not model default separately; expected == promised
+        ytm_expected = ytm_promised
+    except Exception:
+        ytm_promised = None
+        ytm_expected = None
+
+    result['ytm_promised'] = ytm_promised
+    result['ytm_expected'] = ytm_expected
+    result['ytm'] = ytm_expected
+    return result
+
+
+
 
 
 def print_report(note_data, result):

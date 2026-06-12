@@ -1,6 +1,6 @@
 {
   "instrument_id": "XS2148370211",
-  "model": "hullwhite",
+  "model": "bond",
   "description": "Bank of America Sr Unsec Fixed Rate Bond",
   "evaluation_date": "08-06-2026",
   "issue_date": "31-03-2020",

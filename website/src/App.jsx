@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import logo from '../logo_q.png'
 import Instrument from './Instrument'
+import Sidebar from './Sidebar'
 
 function fmt(v) {
   if (v == null) return ''
@@ -20,6 +21,9 @@ function fmtPct(v) {
 export default function App() {
   const [rows, setRows] = useState(null)
   const [error, setError] = useState(null)
+  const [filterInstrument, setFilterInstrument] = useState('')
+  const [filterModel, setFilterModel] = useState('')
+  const [filterCurrency, setFilterCurrency] = useState('')
   const [route, setRoute] = useState(() => {
     const h = window.location.hash || ''
     if (h.startsWith('#/instrument/')) return h.replace('#/instrument/', '')
@@ -74,10 +78,34 @@ export default function App() {
         Quantyx Pricer
       </h1>
       <p style={{ marginTop: 4 }}>Click an Instrument ID to view its details.</p>
+      <div className="app-layout">
+        <Sidebar
+          models={Array.from(new Set(rows.map(r => r.model || (r.result && r.result.model) || '').filter(Boolean)))}
+          currencies={Array.from(new Set(rows.map(r => r.currency || (r.result && r.result.currency) || '').filter(Boolean)))}
+          filterInstrument={filterInstrument}
+          setFilterInstrument={setFilterInstrument}
+          filterModel={filterModel}
+          setFilterModel={setFilterModel}
+          filterCurrency={filterCurrency}
+          setFilterCurrency={setFilterCurrency}
+          clearAll={() => { setFilterInstrument(''); setFilterModel(''); setFilterCurrency('') }}
+        />
+        <div className="main-panel">
+          <datalist id="instrument-ids">
+            {rows && rows.map((r, i) => {
+              const id = r.instrument_id || (r.result && r.result.instrument_id) || r.bond_file || ''
+              return id ? <option key={i} value={id} /> : null
+            })}
+          </datalist>
+
+          
+      
+      
       <table>
         <thead>
           <tr>
             <th>Instrument ID</th>
+            <th>Currency</th>
             <th className="center">PV </th>
             <th className="center">PV to worst</th>
             <th className="center">PV to maturity</th>
@@ -86,7 +114,23 @@ export default function App() {
           </tr>
         </thead>
         <tbody>
-            {rows.map((r, i) => {
+            {rows
+              .filter(r => {
+                if (filterInstrument) {
+                  const id = r.instrument_id || (r.result && r.result.instrument_id) || r.bond_file || ''
+                  if (id !== filterInstrument) return false
+                }
+                if (filterModel) {
+                  const model = r.model || (r.result && r.result.model) || ''
+                  if (model !== filterModel) return false
+                }
+                if (filterCurrency) {
+                  const cur = r.currency || (r.result && r.result.currency) || ''
+                  if (cur !== filterCurrency) return false
+                }
+                return true
+              })
+              .map((r, i) => {
             const res = r.result || {}
             const pp = res.price_pct || {}
             const colPV = pp.pv_note ?? res.pv_note ?? res.selected_npv
@@ -97,16 +141,19 @@ export default function App() {
                 <td className="mono">
                   <a href={`#/instrument/${r.instrument_id || res.instrument_id || r.bond_file || ''}${r.bond_file ? '::' + r.bond_file : ''}`}>{r.instrument_id || res.instrument_id || r.bond_file || ''}</a>
                 </td>
+                <td>{r.currency || res.currency || ''}</td>
                 <td className="center">{fmt(colPV)}</td>
                 <td className="center">{fmt(colWorst)}</td>
                 <td className="center">{fmt(colMat)}</td>
-                <td className="center">{fmtPct(res.model_ytm_to_maturity)}</td>
+                <td className="center">{fmtPct(res.ytm ?? res.ytm_expected ?? res.model_ytm_to_maturity ?? res.yield_to_maturity)}</td>
                 <td>{r.model || res.model || ''}</td>
               </tr>
             )
           })}
         </tbody>
       </table>
+        </div>
+      </div>
     </div>
   )
 }

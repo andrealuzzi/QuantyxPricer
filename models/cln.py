@@ -101,23 +101,26 @@ def price_cln(curve, bond_data: Dict[str, Any], curve_json=None):
     df_prev = curve.discount(prev_date)
     S_prev = S_at(prev_date)
 
+    cashflows = []
+
     for i in range(1, len(schedule)):
         pay_date = schedule[i]
         accrual = day_count.yearFraction(schedule[i - 1], pay_date)
         coupon_rate = bond_data.get('fixed_coupon_rate', 0.0)
         coupon = par * float(coupon_rate) * accrual
 
-        # Skip payments that already occurred; keep prev_date at eval_date
+        # Skip payments that already occurred; keep prev_date anchored at eval_date
         if pay_date <= eval_date:
             continue
 
         df = curve.discount(pay_date)
         S = S_at(pay_date)
 
-        pv_coupons += coupon * df * S
+        pv_coupon = coupon * df * S
+        pv_coupons += pv_coupon
 
-        # redemption only at maturity
-        if pay_date == maturity_date:
+        # redemption at maturity: accept last scheduled payment or any pay_date >= maturity_date
+        if pay_date == maturity_date or i == len(schedule) - 1 or pay_date >= maturity_date:
             pv_redemption = par * df * S
 
         # default probability in interval [prev_date, pay_date]
@@ -125,7 +128,19 @@ def price_cln(curve, bond_data: Dict[str, Any], curve_json=None):
         dp = max(0.0, S_prev - S_curr)
         # approximate discount in interval by average
         df_avg = 0.5 * (df_prev + df)
-        pv_recovery += recovery * par * df_avg * dp
+        pv_recovery_piece = recovery * par * df_avg * dp
+        pv_recovery += pv_recovery_piece
+
+        cashflows.append({
+            'pay_date': pay_date.ISO(),
+            'accrual': accrual,
+            'coupon': coupon,
+            'df': df,
+            'survival': S,
+            'pv_coupon': pv_coupon,
+            'default_prob_interval': dp,
+            'pv_recovery_piece': pv_recovery_piece,
+        })
 
         prev_date = pay_date
         df_prev = df
@@ -135,17 +150,91 @@ def price_cln(curve, bond_data: Dict[str, Any], curve_json=None):
 
     result = {
         'selected_npv': npv,
+        'pv_coupons': pv_coupons,
+        'pv_redemption': pv_redemption,
+        'pv_recovery': pv_recovery,
         'valuation_mode': 'to_maturity',
         'discount_curve_name': None,
         'redemption_pv': pv_redemption,
         'spread_bp': bond_data.get('credit_spread_bp'),
-        'cashflows': [],
+        'cashflows': cashflows,
         'scenarios': [],
         'cds_curve_used': cds_cfg.get('curve_name') if isinstance(cds_cfg, dict) and cds_cfg.get('curve_name') else None,
+        'hazard_segments': segments,
     }
+    # Compute YTMs: promised (ignore default/recovery) and expected (include survival & recovery)
+    try:
+        freq = hullwhite.get_compounding_frequency_per_year(bond_data)
+        eval_date = ql.Settings.instance().evaluationDate
+        # promised cashflows: coupon amounts and redemption at maturity
+        promised_amounts = []
+        promised_times = []
+        for i in range(1, len(schedule)):
+            pd = schedule[i]
+            accrual = day_count.yearFraction(schedule[i - 1], pd)
+            coupon_amt = par * float(bond_data.get('fixed_coupon_rate', 0.0)) * accrual
+            if pd > eval_date:
+                t = day_count.yearFraction(eval_date, pd)
+                promised_amounts.append(float(coupon_amt))
+                promised_times.append(float(t))
+        # redemption time
+        t_red = day_count.yearFraction(eval_date, maturity_date)
+        if t_red > 0.0:
+            promised_amounts.append(float(par))
+            promised_times.append(float(t_red))
+
+        # expected cashflows: coupon * survival + recovery*par*dp (allocated to period end)
+        expected_amounts = []
+        expected_times = []
+        S_prev = S_at(eval_date)
+        for cf in cashflows:
+            pd = ql.DateParser.parseISO(cf['pay_date'])
+            t = day_count.yearFraction(eval_date, pd)
+            # expected coupon nominal at period end
+            exp_coupon = cf['coupon'] * cf['survival']
+            # recovery piece allocated at pay date (nominal)
+            exp_rec = float(recovery) * par * float(cf['default_prob_interval'])
+            expected_amounts.append(float(exp_coupon + exp_rec))
+            expected_times.append(float(t))
+        # include expected redemption at maturity (survival-weighted)
+        if t_red > 0.0:
+            S_mat = survival_at(t_red, segments)
+            expected_amounts.append(float(par * S_mat))
+            expected_times.append(float(t_red))
+
+        ytm_promised = hullwhite.solve_ytm_from_cashflows(float(npv), promised_amounts, promised_times, freq)
+        ytm_expected = hullwhite.solve_ytm_from_cashflows(float(npv), expected_amounts, expected_times, freq)
+    except Exception:
+        ytm_promised = None
+        ytm_expected = None
+
+    result['ytm_promised'] = ytm_promised
+    result['ytm_expected'] = ytm_expected
+    # write canonical 'ytm' as requested (expected)
+    result['ytm'] = ytm_expected
     return result
 
 
 def print_cln_result(bond_data, result):
     amt_to_pct = lambda v: v * 100.0 / float(bond_data.get('par', 100.0))
-    print(f"CLN {bond_data.get('instrument_id')} - price (%): {amt_to_pct(result['selected_npv']):.6f}")
+    print(f"{bond_data.get('description','CLN')} ({bond_data.get('instrument_id')})")
+    print(f"Model: reduced-form CLN")
+    print(f"Selected price (%): {amt_to_pct(result['selected_npv']):.6f}")
+    print(f"PV coupons: {amt_to_pct(result.get('pv_coupons',0.0)):.6f} %")
+    print(f"PV redemption: {amt_to_pct(result.get('pv_redemption',0.0)):.6f} %")
+    print(f"PV expected recovery: {amt_to_pct(result.get('pv_recovery',0.0)):.6f} %")
+    if result.get('cds_curve_used'):
+        print(f"CDS curve used: {result['cds_curve_used']}")
+    if result.get('hazard_segments'):
+        print('Hazard segments (t years -> lambda):')
+        for seg in result['hazard_segments']:
+            print(f"  t={seg['t']:.3f} -> lambda={seg['lambda']:.6f}")
+
+    cashflows = result.get('cashflows', [])
+    if cashflows:
+        print('Coupons and survival (selected path):')
+        for cf in cashflows:
+            print(
+                f"  {cf['pay_date']}: accr={cf['accrual']:.6f}, coupon={cf['coupon']:.6f}, df={cf['df']:.6f}, S={cf['survival']:.6f}, pv_coupon={cf['pv_coupon']:.6f}, dp={cf['default_prob_interval']:.6f}, pv_rec={cf['pv_recovery_piece']:.6f}"
+            )
+    print()
