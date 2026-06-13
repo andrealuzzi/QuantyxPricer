@@ -1,4 +1,5 @@
 import argparse
+import sys
 from pathlib import Path
 
 from models import hullwhite, index_linked, montecarlo, spire, trinomialtree,cln
@@ -7,6 +8,13 @@ try:
 except ModuleNotFoundError:
     import reporting.pdf_report as pdf_report
     import reporting.json_report as json_report
+
+# Add scripts to path so we can import update_swap_curves_ecb
+sys.path.insert(0, str(Path(__file__).parent / 'scripts'))
+try:
+    from update_swap_curves_ecb import update_swap_curves
+except ImportError:
+    update_swap_curves = None
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -299,6 +307,7 @@ def main():
     run_all_requested = args.all_bonds or str(bond_selector).strip().lower() == 'all'
 
     if run_all_requested:
+        update_swap_curves(verbose=True)
         run_all_bonds(curve_json, args)
         return
 

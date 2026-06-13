@@ -71,8 +71,77 @@ input::placeholder { color: rgba(255,255,255,0.25) }
   border-radius: 4px;
 }
 .clear-btn:hover { filter: brightness(0.95) }
+.clear-btn:visited,
+.clear-btn:active,
+.clear-btn:focus,
+.clear-btn:focus-visible {
+  color: white;
+}
+
+.clear-btn--termsheet {
+  background: #ff0000;
+  color: #ffffff;
+}
+
+.clear-btn--report {
+  background: #0b5d1e;
+  color: #ffffff;
+}
+
+.clear-btn--api {
+  background: #0078d4;
+  color: #ffffff;
+}
+
+.clear-btn--update-curves {
+  background: #1b8f1b;
+  color: #ffffff;
+}
+
+/* File uploader modal */
+.uploader-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:50 }
+.uploader-modal { background: var(--panel); padding: 18px; border-radius: 8px; width: 480px; max-width: 90%; border: 1px solid rgba(255,255,255,0.03) }
+.dropzone { border: 2px dashed rgba(255,255,255,0.04); padding: 24px; text-align: center; border-radius: 6px }
+.dropzone.dragover { background: rgba(255,255,255,0.02); border-color: rgba(212,175,55,0.6) }
+.dropzone input[type=file] { margin-top: 8px }
+.upload-error { color: #ffb4b4; margin-top: 8px }
 
 .error { color: #ffb4b4; background: rgba(255,0,0,0.03); padding: 8px; border-radius: 4px }
 
 /* keep existing styles as fallback selectors for compatibility */
 .detail-row pre, .nested-value pre { font-family: inherit }
+
+/* Snackbar */
+.snackbar {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%) translateY(8px);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+  z-index: 9999;
+  min-width: 160px;
+  text-align: center;
+  font-weight: 600;
+  opacity: 0;
+}
+.snackbar.show {
+  animation: snackbar-in 240ms ease-out forwards;
+}
+.snackbar.hide {
+  animation: snackbar-out 240ms ease-in forwards;
+}
+.snackbar--success { background: #1b5e20 }
+.snackbar--error { background: #b00020 }
+.snackbar--info { background: #333 }
+
+@keyframes snackbar-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes snackbar-out {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(8px); }
+}

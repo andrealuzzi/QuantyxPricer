@@ -102,6 +102,9 @@ def get_day_count(name: str):
         '30/360': lambda: ql.Thirty360(ql.Thirty360.BondBasis),
         'Thirty360': lambda: ql.Thirty360(ql.Thirty360.BondBasis),
         'ActualActual': lambda: ql.ActualActual(ql.ActualActual.ISDA),
+        'ACT/ACT': lambda: ql.ActualActual(ql.ActualActual.ISDA),
+        'ACT/ACT (PERIODIC BASIS)': lambda: ql.ActualActual(ql.ActualActual.ISDA),
+        'ACT/ACT (ICMA)': lambda: ql.ActualActual(ql.ActualActual.ISDA),
     }
     if name not in day_counts:
         raise ValueError(f'Unsupported day count: {name}')

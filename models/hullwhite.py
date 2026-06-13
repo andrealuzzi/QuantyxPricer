@@ -93,6 +93,10 @@ def get_day_count(name: str):
         'Actual360': ql.Actual360,
         'Thirty360': lambda: ql.Thirty360(ql.Thirty360.BondBasis),
         '30/360': lambda: ql.Thirty360(ql.Thirty360.BondBasis),
+        'ActualActual': lambda: ql.ActualActual(ql.ActualActual.ISDA),
+        'ACT/ACT': lambda: ql.ActualActual(ql.ActualActual.ISDA),
+        'ACT/ACT (PERIODIC BASIS)': lambda: ql.ActualActual(ql.ActualActual.ISDA),
+        'ACT/ACT (ICMA)': lambda: ql.ActualActual(ql.ActualActual.ISDA),
     }
     if name not in day_counts:
         raise ValueError(f'Unsupported day count: {name}')
@@ -136,6 +140,8 @@ def get_reference_day_count(name: str):
     ref_day_counts = {
         'Actual360': ql.Actual360,
         'Actual365Fixed': ql.Actual365Fixed,
+        'ActualActual': lambda: ql.ActualActual(ql.ActualActual.ISDA),
+        'ACT/ACT': lambda: ql.ActualActual(ql.ActualActual.ISDA),
     }
     if name not in ref_day_counts:
         raise ValueError(f'Unsupported reference rate day count: {name}')

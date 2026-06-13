@@ -5,7 +5,11 @@
   "scripts": {
     "predev": "mkdir -p public && cp -f ../output/prices.json public/prices.json || true",
     "dev": "vite",
+    "local": "VITE_API_URL=http://127.0.0.1:8000 vite",
+    "prod": "VITE_API_URL=https://lux-pricer-eta2cxamh7evctdv.switzerlandnorth-01.azurewebsites.net vite --mode production",
     "build": "vite build",
+    "build:local": "VITE_API_URL=http://127.0.0.1:8000 vite build --mode development",
+    "build:prod": "VITE_API_URL=https://lux-pricer-eta2cxamh7evctdv.switzerlandnorth-01.azurewebsites.net vite build --mode production",
     "preview": "vite preview",
     "start": "vite",
     "predeploy": "npm run build",

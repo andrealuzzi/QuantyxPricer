@@ -19,8 +19,23 @@ function fmtPct(v) {
 }
 
 export default function App() {
+  // Prefer VITE_API_URL. In production mode, default to Azure backend.
+  const apiBase = (() => {
+    if (typeof import.meta === 'undefined' || !import.meta.env) return ''
+    if (import.meta.env.VITE_API_URL) return String(import.meta.env.VITE_API_URL).replace(/\/$/, '')
+    if (import.meta.env.MODE === 'production') {
+      return 'https://lux-pricer-eta2cxamh7evctdv.switzerlandnorth-01.azurewebsites.net'
+    }
+    return ''
+  })()
   const [rows, setRows] = useState(null)
+  const [missingInstrumentIds, setMissingInstrumentIds] = useState([])
   const [error, setError] = useState(null)
+  const [pricingIds, setPricingIds] = useState([])
+  const [snack, setSnack] = useState({ visible: false, message: '', type: 'info' })
+  const [snackHiding, setSnackHiding] = useState(false)
+  const [pricingAll, setPricingAll] = useState(false)
+  const [updatingCurves, setUpdatingCurves] = useState(false)
   const [filterInstrument, setFilterInstrument] = useState('')
   const [filterModel, setFilterModel] = useState('')
   const [filterCurrency, setFilterCurrency] = useState('')
@@ -31,7 +46,11 @@ export default function App() {
   })
 
   useEffect(() => {
-    const tryPaths = ['/prices.json', 'prices.json']
+    const tryPaths = [
+      apiBase ? `${apiBase}/prices` : '/prices',
+      apiBase ? `${apiBase}/prices.json` : '/prices.json',
+      'prices.json'
+    ]
     let mounted = true
 
     async function fetchOne() {
@@ -43,7 +62,7 @@ export default function App() {
           if (!mounted) return
           setRows(data)
           return
-        } catch (e) {
+        } catch {
           continue
         }
       }
@@ -52,7 +71,27 @@ export default function App() {
 
     fetchOne()
     return () => { mounted = false }
-  }, [])
+  }, [apiBase])
+
+  useEffect(() => {
+    let mounted = true
+
+    async function fetchMissing() {
+      const endpoint = apiBase ? `${apiBase}/fetch_noprice_assets` : '/fetch_noprice_assets'
+      try {
+        const resp = await fetch(endpoint)
+        if (!resp.ok) return
+        const data = await resp.json()
+        if (!mounted) return
+        setMissingInstrumentIds(Array.isArray(data.missing_instrument_ids) ? data.missing_instrument_ids : [])
+      } catch {
+        if (mounted) setMissingInstrumentIds([])
+      }
+    }
+
+    fetchMissing()
+    return () => { mounted = false }
+  }, [apiBase, rows])
 
   useEffect(() => {
     function onHash() {
@@ -64,11 +103,74 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
+  // auto-hide snackbar with hide animation
+  useEffect(() => {
+    let hideTimer = null
+    let removeTimer = null
+    if (snack.visible) {
+      // schedule start hiding after 4s
+      hideTimer = setTimeout(() => setSnackHiding(true), 4000)
+    }
+    if (snackHiding) {
+      // after hide animation duration, actually remove the snackbar
+      removeTimer = setTimeout(() => {
+        setSnack({ visible: false, message: '', type: 'info' })
+        setSnackHiding(false)
+      }, 240)
+    }
+    return () => {
+      if (hideTimer) clearTimeout(hideTimer)
+      if (removeTimer) clearTimeout(removeTimer)
+    }
+  }, [snack.visible, snackHiding])
+
+  const refreshPrices = async () => {
+    for (const p2 of [apiBase ? `${apiBase}/prices` : '/prices', apiBase ? `${apiBase}/prices.json` : '/prices.json', 'prices.json']) {
+      try {
+        const r2 = await fetch(p2)
+        if (!r2.ok) continue
+        const data2 = await r2.json()
+        setRows(data2)
+        break
+      } catch { continue }
+    }
+  }
+
+  const priceOne = async (id) => {
+    if (!id) {
+      setSnack({ visible: true, message: 'No instrument id available', type: 'error' })
+      return
+    }
+    setPricingIds(prev => [...prev, id])
+    const payload = { InstrumentId: id }
+    console.debug('[UI] pricing request', payload)
+    try {
+      const resp = await fetch((apiBase ? `${apiBase}` : '') + '/price', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      console.debug('[UI] pricing response status', resp.status)
+      if (!resp.ok) {
+        let txt = ''
+        try { txt = await resp.text() } catch { txt = '<no body>' }
+        console.error('[UI] pricing failed', resp.status, txt)
+        setSnack({ visible: true, message: `Pricing failed: ${txt}`, type: 'error' })
+        setPricingIds(prev => prev.filter(x => x !== id))
+        return
+      }
+      const j = await resp.json()
+      console.debug('[UI] pricing result', j)
+      setPricingIds(prev => prev.filter(x => x !== id))
+      setSnack({ visible: true, message: `Pricing succeeded for ${id}`, type: 'success' })
+      await refreshPrices()
+    } catch (err) {
+      setPricingIds(prev => prev.filter(x => x !== id))
+      setSnack({ visible: true, message: `Error calling price API: ${String(err)}`, type: 'error' })
+    }
+  }
+
   if (error) return <div className="error">Error: {error}</div>
   if (!rows) return <div>Loading data...</div>
 
   if (route) {
-    return <Instrument instrumentId={route} />
+    return <Instrument instrumentId={route} apiBase={apiBase} />
   }
 
   return (
@@ -89,6 +191,110 @@ export default function App() {
           filterCurrency={filterCurrency}
           setFilterCurrency={setFilterCurrency}
           clearAll={() => { setFilterInstrument(''); setFilterModel(''); setFilterCurrency('') }}
+          apiBase={apiBase}
+          onPriceAll={async () => {
+            if (pricingAll) return
+            setPricingAll(true)
+            setSnack({ visible: true, message: 'Starting price all...', type: 'info' })
+            try {
+              const resp = await fetch((apiBase ? `${apiBase}` : '') + '/price_all', { method: 'POST' })
+              if (!resp.ok) {
+                const txt = await resp.text().catch(() => '<no body>')
+                setSnack({ visible: true, message: `Price all failed: ${txt}`, type: 'error' })
+                setPricingAll(false)
+                return
+              }
+              const jobObj = await resp.json().catch(() => null)
+              const jobId = jobObj && jobObj.job_id
+              if (!jobId) {
+                // fallback: maybe server returned immediate data
+                if (Array.isArray(jobObj)) setRows(jobObj)
+                setSnack({ visible: true, message: 'Price all completed', type: 'success' })
+                setPricingAll(false)
+                return
+              }
+
+              // poll job status
+              const statusUrl = (apiBase ? `${apiBase}` : '') + `/jobs/${jobId}`
+              let done = false
+              while (!done) {
+                await new Promise(r => setTimeout(r, 2000))
+                try {
+                  const sresp = await fetch(statusUrl)
+                  if (!sresp.ok) continue
+                  const s = await sresp.json()
+                  if (s.status === 'pending' || s.status === 'running') continue
+                  done = true
+                  if (s.status === 'succeeded') {
+                    setSnack({ visible: true, message: 'Price all succeeded', type: 'success' })
+                    // refresh prices
+                    for (const p2 of [apiBase ? `${apiBase}/prices` : '/prices', apiBase ? `${apiBase}/prices.json` : '/prices.json', 'prices.json']) {
+                      try {
+                        const r2 = await fetch(p2)
+                        if (!r2.ok) continue
+                        const data2 = await r2.json()
+                        setRows(data2)
+                        break
+                      } catch { continue }
+                    }
+                  } else {
+                    setSnack({ visible: true, message: `Price all failed: ${s.error || 'unknown'}`, type: 'error' })
+                  }
+                } catch (e) {
+                  console.error('Polling job status error', e)
+                }
+              }
+            } catch (err) {
+              setSnack({ visible: true, message: `Error calling price_all: ${String(err)}`, type: 'error' })
+            }
+            setPricingAll(false)
+          }}
+          pricingAll={pricingAll}
+          onUpdateCurves={async () => {
+            if (updatingCurves) return
+            setUpdatingCurves(true)
+            setSnack({ visible: true, message: 'Starting curve update...', type: 'info' })
+            try {
+              const resp = await fetch((apiBase ? `${apiBase}` : '') + '/update_curve', { method: 'POST' })
+              if (!resp.ok) {
+                const txt = await resp.text().catch(() => '<no body>')
+                setSnack({ visible: true, message: `Update curves failed: ${txt}`, type: 'error' })
+                setUpdatingCurves(false)
+                return
+              }
+              const jobObj = await resp.json().catch(() => null)
+              const jobId = jobObj && jobObj.job_id
+              if (!jobId) {
+                setSnack({ visible: true, message: 'Update curves completed', type: 'success' })
+                setUpdatingCurves(false)
+                return
+              }
+
+              const statusUrl = (apiBase ? `${apiBase}` : '') + `/jobs/${jobId}`
+              let done = false
+              while (!done) {
+                await new Promise(r => setTimeout(r, 2000))
+                try {
+                  const sresp = await fetch(statusUrl)
+                  if (!sresp.ok) continue
+                  const s = await sresp.json()
+                  if (s.status === 'pending' || s.status === 'running') continue
+                  done = true
+                  if (s.status === 'succeeded') {
+                    setSnack({ visible: true, message: 'Update curves succeeded', type: 'success' })
+                  } else {
+                    setSnack({ visible: true, message: `Update curves failed: ${s.error || 'unknown'}`, type: 'error' })
+                  }
+                } catch (e) {
+                  console.error('Polling update_curve job status error', e)
+                }
+              }
+            } catch (err) {
+              setSnack({ visible: true, message: `Error calling update_curve: ${String(err)}`, type: 'error' })
+            }
+            setUpdatingCurves(false)
+          }}
+          updatingCurves={updatingCurves}
         />
         <div className="main-panel">
           <datalist id="instrument-ids">
@@ -111,6 +317,7 @@ export default function App() {
             <th className="center">PV to maturity</th>
             <th className="center">YTM</th>
             <th>Model</th>
+            <th title="Price">⏱️</th>
           </tr>
         </thead>
         <tbody>
@@ -147,13 +354,73 @@ export default function App() {
                 <td className="center">{fmt(colMat)}</td>
                 <td className="center">{fmtPct(res.ytm ?? res.ytm_expected ?? res.model_ytm_to_maturity ?? res.yield_to_maturity)}</td>
                 <td>{r.model || res.model || ''}</td>
+                <td style={{textAlign: 'center'}}>
+                  {(() => {
+                    const id = r.instrument_id || res.instrument_id || ''
+                    const busy = id && pricingIds.includes(id)
+                    return (
+                      <button
+                        title="pricing"
+                        disabled={busy}
+                        onClick={async (e) => {
+                          e.preventDefault()
+                          await priceOne(id)
+                        }}
+                      >
+                        {busy ? '⏳' : '⏱️'}
+                      </button>
+                    )
+                  })()}
+                </td>
               </tr>
             )
           })}
         </tbody>
       </table>
+          <div style={{ marginTop: 24 }}>
+            <h2 style={{ marginBottom: 8 }}>Not Priced Instruments</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Instrument ID</th>
+                  <th title="Price">⏱️</th>
+                </tr>
+              </thead>
+              <tbody>
+                {missingInstrumentIds.length > 0 ? missingInstrumentIds.map((instrumentId) => (
+                  <tr key={instrumentId}>
+                    <td className="mono">
+                      <a href={`#/instrument/${instrumentId}::${instrumentId}.json`}>{instrumentId}</a>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <button
+                        title="pricing"
+                        disabled={pricingIds.includes(instrumentId)}
+                        onClick={async (e) => {
+                          e.preventDefault()
+                          await priceOne(instrumentId)
+                        }}
+                      >
+                        {pricingIds.includes(instrumentId) ? '⏳' : '⏱️'}
+                      </button>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={2}>No missing instruments.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+      {/* Snackbar */}
+      {(snack.visible || snackHiding) && (
+        <div className={`snackbar snackbar--${snack.type || 'info'} ${snackHiding ? 'hide' : 'show'}`}>{snack.message}</div>
+      )}
     </div>
   )
 }
+
+// Snackbar styles: simple inline component can be used in App
